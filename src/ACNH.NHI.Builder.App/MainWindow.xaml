@@ -1,0 +1,132 @@
+<Window x:Class="ACNH.NHI.Builder.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="ACNH NHI Builder" Height="820" Width="1320" MinHeight="680" MinWidth="1080"
+        WindowStartupLocation="CenterScreen">
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <DockPanel Grid.Row="0" Margin="0,0,0,10">
+            <TextBlock Text="ACNH NHI Builder" FontSize="24" FontWeight="SemiBold" VerticalAlignment="Center"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Ouvrir .nhi"/>
+                <Button Content="Dossier NHSE"/>
+                <Button Content="Presets"/>
+            </StackPanel>
+        </DockPanel>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="290"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="320"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" BorderBrush="#DDD" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,0,10,0">
+                <DockPanel>
+                    <TextBox DockPanel.Dock="Top" Margin="0,0,0,10" Height="32" ToolTip="Rechercher un objet" Text=""/>
+                    <TreeView>
+                        <TreeViewItem Header="Tout sélectionner" IsExpanded="True"/>
+                        <TreeViewItem Header="Meubles" IsExpanded="True">
+                            <TreeViewItem Header="Mobilier"/>
+                            <TreeViewItem Header="Petits objets"/>
+                            <TreeViewItem Header="Objets muraux"/>
+                            <TreeViewItem Header="Plafonniers"/>
+                            <TreeViewItem Header="Papiers peints"/>
+                            <TreeViewItem Header="Sols"/>
+                            <TreeViewItem Header="Tapis"/>
+                        </TreeViewItem>
+                        <TreeViewItem Header="Vêtements" IsExpanded="True">
+                            <TreeViewItem Header="Hauts"/>
+                            <TreeViewItem Header="Pantalons / jupes"/>
+                            <TreeViewItem Header="Robes / tenues"/>
+                            <TreeViewItem Header="Chapeaux"/>
+                            <TreeViewItem Header="Accessoires"/>
+                            <TreeViewItem Header="Chaussettes"/>
+                            <TreeViewItem Header="Chaussures"/>
+                            <TreeViewItem Header="Sacs"/>
+                        </TreeViewItem>
+                        <TreeViewItem Header="Matériaux"/>
+                        <TreeViewItem Header="Collections spéciales"/>
+                        <TreeViewItem Header="Outils / consommables"/>
+                    </TreeView>
+                </DockPanel>
+            </Border>
+
+            <Border Grid.Column="1" BorderBrush="#DDD" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,0,10,0">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+                        <TextBlock Text="Objets" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <TextBlock Text="  — aperçu visuel et sélection individuelle" Foreground="#666" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <WrapPanel>
+                            <Border Width="150" Height="150" BorderBrush="#CCC" BorderThickness="1" CornerRadius="6" Margin="6" Padding="8">
+                                <StackPanel HorizontalAlignment="Center">
+                                    <Border Height="88" Width="88" Background="#F0F0F0" CornerRadius="4"/>
+                                    <TextBlock Text="Aperçu objet" Margin="0,8,0,0" TextAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Width="150" Height="150" BorderBrush="#CCC" BorderThickness="1" CornerRadius="6" Margin="6" Padding="8">
+                                <StackPanel HorizontalAlignment="Center">
+                                    <Border Height="88" Width="88" Background="#F0F0F0" CornerRadius="4"/>
+                                    <TextBlock Text="Aperçu variante" Margin="0,8,0,0" TextAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                        </WrapPanel>
+                    </ScrollViewer>
+                </DockPanel>
+            </Border>
+
+            <Border Grid.Column="2" BorderBrush="#DDD" BorderThickness="1" CornerRadius="6" Padding="12">
+                <StackPanel>
+                    <TextBlock Text="Options" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                    <TextBlock Text="Variantes" FontWeight="SemiBold"/>
+                    <RadioButton Content="Une seule variante" IsChecked="True" Margin="0,6,0,2"/>
+                    <RadioButton Content="Toutes les variantes" Margin="0,2"/>
+                    <RadioButton Content="Choisir manuellement" Margin="0,2,0,10"/>
+
+                    <Separator Margin="0,8"/>
+                    <CheckBox Content="Exclure les objets internes / debug" IsChecked="True" Margin="0,4"/>
+                    <CheckBox Content="Exclure les variantes Invalid" IsChecked="True" Margin="0,4"/>
+                    <CheckBox Content="Exclure les objets normalement impossibles à posséder" IsChecked="True" Margin="0,4"/>
+
+                    <Separator Margin="0,8"/>
+                    <TextBlock Text="Matériaux" FontWeight="SemiBold"/>
+                    <CheckBox Content="Utiliser la taille maximale des piles" IsChecked="True" Margin="0,6"/>
+                    <DockPanel Margin="0,4">
+                        <TextBlock Text="Nombre de piles :" VerticalAlignment="Center"/>
+                        <TextBox Text="1" Width="60" HorizontalContentAlignment="Center" Margin="8,0,0,0"/>
+                    </DockPanel>
+
+                    <Separator Margin="0,8"/>
+                    <TextBlock Text="Analyse du .nhi" FontWeight="SemiBold"/>
+                    <TextBlock Text="Capacité : 9 000" Margin="0,6,0,0"/>
+                    <TextBlock Text="Utilisées : 0"/>
+                    <TextBlock Text="Libres : 9 000"/>
+                    <TextBlock Text="Doublons : 0"/>
+                    <Button Content="Nettoyer les doublons" Margin="0,10,0,0"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <Grid Grid.Row="2" Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel>
+                <TextBlock Text="0 / 9 000 cases utilisées — 9 000 libres" FontWeight="SemiBold"/>
+                <ProgressBar Height="14" Minimum="0" Maximum="9000" Value="0" Margin="0,6,20,0"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
+                <Button Content="Exporter manifeste CSV"/>
+                <Button Content="Générer le .nhi" FontWeight="SemiBold"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>
