@@ -50,7 +50,6 @@ public partial class MainWindow : Window
         }
         catch
         {
-            // Cosmetic only. The WPF surface stays dark even when the OS title bar API is unavailable.
         }
     }
 
@@ -336,6 +335,9 @@ public partial class MainWindow : Window
 
     private void RefreshCatalogSummary()
     {
+        if (CatalogCountText is null || SelectedCountText is null)
+            return;
+
         if (_catalogView is null)
         {
             CatalogCountText.Text = "Charge NHSE pour afficher les objets.";
@@ -417,7 +419,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        var existingIds = SkipExistingCheckBox.IsChecked == true
+        HashSet<ushort> existingIds = SkipExistingCheckBox.IsChecked == true
             ? _inventory.Slots.Where(z => !z.IsEmpty).Select(z => z.ItemId).ToHashSet()
             : [];
 
@@ -465,7 +467,10 @@ public partial class MainWindow : Window
         var rows = _inventory.Slots
             .Select((item, index) =>
             {
-                _nhse?.CatalogById.TryGetValue(item.ItemId, out var entry);
+                ItemCatalogEntry? entry = null;
+                if (_nhse is not null)
+                    _nhse.CatalogById.TryGetValue(item.ItemId, out entry);
+
                 return new InventoryRow(
                     index + 1,
                     entry?.Name ?? "Inconnu",
