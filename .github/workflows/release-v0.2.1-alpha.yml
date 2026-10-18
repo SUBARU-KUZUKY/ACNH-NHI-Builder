@@ -1,0 +1,63 @@
+name: Release v0.2.1-alpha
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/release-v0.2.1-alpha.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  release-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore ACNH-NHI-Builder.sln
+
+      - name: Build
+        run: dotnet build ACNH-NHI-Builder.sln --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test ACNH-NHI-Builder.sln --configuration Release --no-build
+
+      - name: Publish self-contained Windows x64
+        shell: pwsh
+        run: |
+          dotnet publish src/ACNH.NHI.Builder.App/ACNH.NHI.Builder.App.csproj `
+            --configuration Release `
+            --runtime win-x64 `
+            --self-contained true `
+            -p:DebugType=None `
+            -p:DebugSymbols=false `
+            --output publish/win-x64
+          Copy-Item README.md publish/win-x64/README.md
+          Copy-Item LICENSE publish/win-x64/LICENSE
+
+      - name: Create ZIP
+        shell: pwsh
+        run: |
+          Compress-Archive -Path publish/win-x64/* -DestinationPath ACNH-NHI-Builder-v0.2.1-alpha-win-x64.zip -Force
+
+      - name: Create GitHub prerelease
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create v0.2.1-alpha `
+            ACNH-NHI-Builder-v0.2.1-alpha-win-x64.zip `
+            --repo "${{ github.repository }}" `
+            --target "${{ github.sha }}" `
+            --title "ACNH NHI Builder v0.2.1-alpha" `
+            --prerelease `
+            --notes "Correctif interface de la v0.2.0-alpha : suppression des zones blanches restantes du thème WPF (onglets, listes déroulantes, sélection des catégories, cases et barres de défilement), palette sombre violet/cyan homogène, ouverture maximisée et mise en page responsive pour les petits écrans, fenêtre restaurée redimensionnable jusqu'à 820 x 500, colonnes proportionnelles, textes et commandes adaptés aux faibles résolutions. Le générateur NHSE/.nhi de la v0.2 reste inchangé."
