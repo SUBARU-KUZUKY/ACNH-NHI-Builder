@@ -1,113 +1,254 @@
 <Window x:Class="ACNH.NHI.Builder.App.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="ACNH NHI Builder v0.1.1-alpha" Height="800" Width="1200" MinHeight="670" MinWidth="1000"
+        Title="ACNH NHI Builder v0.2.0-alpha"
+        Height="900" Width="1450" MinHeight="760" MinWidth="1180"
+        Background="{StaticResource AppBackgroundBrush}"
+        Foreground="{StaticResource TextBrush}"
         WindowStartupLocation="CenterScreen">
-    <Grid Margin="14">
+    <Grid Background="{StaticResource AppBackgroundBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <DockPanel Grid.Row="0" Margin="0,0,0,12">
-            <StackPanel>
-                <TextBlock Text="ACNH NHI Builder" FontSize="25" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}"/>
-                <TextBlock Text="v0.1.1-alpha — lecteur, analyseur et nettoyeur .nhi" Foreground="{StaticResource MutedTextBrush}"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button Content="Nouveau" Click="New_Click"/>
-                <Button Content="Ouvrir .nhi" Click="Open_Click"/>
-                <Button Content="Enregistrer sous…" Click="SaveAs_Click"/>
-            </StackPanel>
-        </DockPanel>
+        <!-- Header -->
+        <Border Grid.Row="0" Background="{StaticResource HeaderBrush}" BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="0,0,0,1" Padding="18,14">
+            <DockPanel LastChildFill="True">
+                <StackPanel DockPanel.Dock="Left">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="ACNH NHI Builder" FontSize="27" FontWeight="SemiBold"/>
+                        <TextBlock Text="  v0.2 alpha" Foreground="{StaticResource CyanBrush}" FontSize="15" VerticalAlignment="Bottom" Margin="4,0,0,4"/>
+                    </StackPanel>
+                    <TextBlock Text="Catalogue NHSE → sélection visuelle → génération .nhi" Foreground="{StaticResource MutedTextBrush}"/>
+                </StackPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="Nouveau" Click="New_Click"/>
+                    <Button Content="Ouvrir .nhi" Click="Open_Click"/>
+                    <Button Content="Enregistrer sous…" Click="SaveAs_Click"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
 
-        <Grid Grid.Row="1">
+        <!-- Main area -->
+        <Grid Grid.Row="1" Margin="14">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="255"/>
+                <ColumnDefinition Width="300"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="295"/>
+                <ColumnDefinition Width="335"/>
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="7" Padding="12" Margin="0,0,10,0">
-                <StackPanel>
-                    <TextBlock Text="Générateur visuel" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}"/>
-                    <TextBlock Text="Les catégories seront activées avec l'adaptateur NHSE." Foreground="{StaticResource MutedTextBrush}" Margin="0,2,0,12" TextWrapping="Wrap"/>
-                    <TreeView IsEnabled="False" BorderThickness="0">
-                        <TreeViewItem Header="Meubles" IsExpanded="True">
-                            <TreeViewItem Header="Mobilier"/>
-                            <TreeViewItem Header="Petits objets"/>
-                            <TreeViewItem Header="Objets muraux"/>
-                            <TreeViewItem Header="Plafonniers"/>
-                            <TreeViewItem Header="Papiers peints / sols / tapis"/>
-                        </TreeViewItem>
-                        <TreeViewItem Header="Vêtements" IsExpanded="True">
-                            <TreeViewItem Header="Hauts"/>
-                            <TreeViewItem Header="Pantalons / jupes"/>
-                            <TreeViewItem Header="Robes / tenues"/>
-                            <TreeViewItem Header="Chapeaux / accessoires"/>
-                            <TreeViewItem Header="Chaussettes / chaussures / sacs"/>
-                        </TreeViewItem>
-                        <TreeViewItem Header="Matériaux"/>
-                        <TreeViewItem Header="Collections spéciales"/>
-                        <TreeViewItem Header="Outils / consommables"/>
-                    </TreeView>
-                    <Separator Margin="0,14"/>
-                    <Button Content="Choisir le dossier NHSE…" Click="Nhse_Click"/>
-                    <TextBlock x:Name="NhseStatusText" Text="Aucun dossier NHSE sélectionné" Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="4,4,4,8"/>
-                    <Button Content="Presets…" Click="Presets_Click"/>
-                </StackPanel>
-            </Border>
+            <!-- Left: NHSE + category tree -->
+            <Border Grid.Column="0" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="1" CornerRadius="10" Padding="14" Margin="0,0,12,0">
+                <DockPanel LastChildFill="True">
+                    <StackPanel DockPanel.Dock="Top">
+                        <TextBlock Text="Source NHSE" FontSize="18" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="NhseStatusText" Text="Aucun dossier NHSE chargé"
+                                   Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="0,4,0,8"/>
+                        <Button Content="Choisir / recharger NHSE…" Click="Nhse_Click" Style="{StaticResource CyanButtonStyle}"/>
+                        <Border Background="{StaticResource PanelAltBrush}" BorderBrush="{StaticResource BorderBrush}"
+                                BorderThickness="1" CornerRadius="6" Padding="9" Margin="4,6,4,10">
+                            <TextBlock x:Name="AdapterStatusText" Text="Charge NHSE pour activer le catalogue."
+                                       Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap"/>
+                        </Border>
 
-            <Border Grid.Column="1" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="7" Padding="10" Margin="0,0,10,0">
-                <DockPanel>
-                    <StackPanel DockPanel.Dock="Top" Margin="2,0,0,8">
-                        <TextBlock Text="Contenu du .nhi" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}"/>
-                        <TextBlock x:Name="CurrentFileText" Text="Nouvel inventaire" Foreground="{StaticResource MutedTextBrush}" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="Recherche" FontWeight="SemiBold" Margin="4,2,0,0"/>
+                        <TextBox x:Name="SearchBox" ToolTip="Nom français ou ID (ex. 0x0104)"
+                                 TextChanged="SearchBox_TextChanged" IsEnabled="False"/>
+                        <CheckBox x:Name="HideInternalCheckBox" Content="Masquer interne / debug" IsChecked="True"
+                                  Checked="CatalogFilter_Changed" Unchecked="CatalogFilter_Changed"/>
+                        <CheckBox x:Name="HideInvalidCheckBox" Content="Masquer entrées invalides" IsChecked="True"
+                                  Checked="CatalogFilter_Changed" Unchecked="CatalogFilter_Changed"/>
+                        <Separator Margin="0,10"/>
+                        <TextBlock Text="Catégories" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,6"/>
                     </StackPanel>
-                    <DataGrid x:Name="ItemsGrid" AutoGenerateColumns="False" IsReadOnly="True"
-                              CanUserAddRows="False" CanUserDeleteRows="False" HeadersVisibility="Column"
-                              GridLinesVisibility="Horizontal" AlternationCount="2">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="Slot" Binding="{Binding Slot}" Width="70"/>
-                            <DataGridTextColumn Header="ID" Binding="{Binding ItemId}" Width="95"/>
-                            <DataGridTextColumn Header="Qté" Binding="{Binding Quantity}" Width="70"/>
-                            <DataGridTextColumn Header="System" Binding="{Binding SystemParam}" Width="80"/>
-                            <DataGridTextColumn Header="Additional" Binding="{Binding AdditionalParam}" Width="90"/>
-                            <DataGridTextColumn Header="Uses" Binding="{Binding UseCount}" Width="80"/>
-                        </DataGrid.Columns>
-                    </DataGrid>
+
+                    <TreeView x:Name="CategoryTree" IsEnabled="False" SelectedItemChanged="CategoryTree_SelectedItemChanged">
+                        <TreeViewItem Header="Tout le catalogue" Tag="*" IsSelected="True"/>
+                        <TreeViewItem Header="Meubles" Tag="Meubles" IsExpanded="True">
+                            <TreeViewItem Header="Mobilier" Tag="Meubles|Mobilier"/>
+                            <TreeViewItem Header="Objets muraux" Tag="Meubles|Objets muraux"/>
+                            <TreeViewItem Header="Papiers peints" Tag="Meubles|Papiers peints"/>
+                            <TreeViewItem Header="Sols" Tag="Meubles|Sols"/>
+                            <TreeViewItem Header="Tapis" Tag="Meubles|Tapis"/>
+                            <TreeViewItem Header="Piliers / comptoirs" Tag="Meubles|Piliers / comptoirs"/>
+                        </TreeViewItem>
+                        <TreeViewItem Header="Vêtements" Tag="Vêtements" IsExpanded="True">
+                            <TreeViewItem Header="Hauts" Tag="Vêtements|Hauts"/>
+                            <TreeViewItem Header="Pantalons / jupes" Tag="Vêtements|Pantalons / jupes"/>
+                            <TreeViewItem Header="Robes / tenues" Tag="Vêtements|Robes / tenues"/>
+                            <TreeViewItem Header="Chapeaux" Tag="Vêtements|Chapeaux"/>
+                            <TreeViewItem Header="Accessoires" Tag="Vêtements|Accessoires"/>
+                            <TreeViewItem Header="Chaussettes" Tag="Vêtements|Chaussettes"/>
+                            <TreeViewItem Header="Chaussures" Tag="Vêtements|Chaussures"/>
+                            <TreeViewItem Header="Sacs" Tag="Vêtements|Sacs"/>
+                            <TreeViewItem Header="Parapluies" Tag="Vêtements|Parapluies"/>
+                        </TreeViewItem>
+                        <TreeViewItem Header="Matériaux" Tag="Matériaux" IsExpanded="True">
+                            <TreeViewItem Header="Matériaux / saisonniers" Tag="Matériaux|Matériaux / saisonniers"/>
+                            <TreeViewItem Header="Fruits / légumes / graines" Tag="Matériaux|Fruits / légumes / graines"/>
+                        </TreeViewItem>
+                        <TreeViewItem Header="Collections spéciales" Tag="Collections spéciales" IsExpanded="True">
+                            <TreeViewItem Header="Photos" Tag="Collections spéciales|Photos"/>
+                            <TreeViewItem Header="Gyroïdes" Tag="Collections spéciales|Gyroïdes"/>
+                            <TreeViewItem Header="Art authentique" Tag="Collections spéciales|Art authentique"/>
+                            <TreeViewItem Header="Musiques" Tag="Collections spéciales|Musiques"/>
+                            <TreeViewItem Header="Posters" Tag="Collections spéciales|Posters"/>
+                            <TreeViewItem Header="Modèles poissons / insectes" Tag="Collections spéciales|Modèles poissons / insectes"/>
+                        </TreeViewItem>
+                        <TreeViewItem Header="Outils / consommables" Tag="Outils / consommables"/>
+                        <TreeViewItem Header="Recettes" Tag="Recettes"/>
+                        <TreeViewItem Header="Nature" Tag="Nature"/>
+                        <TreeViewItem Header="Autres" Tag="Autres"/>
+                    </TreeView>
                 </DockPanel>
             </Border>
 
-            <Border Grid.Column="2" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="7" Padding="14">
-                <StackPanel>
-                    <TextBlock Text="Analyse" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}"/>
-                    <TextBlock x:Name="CapacityText" Margin="0,12,0,0" Foreground="{StaticResource TextBrush}"/>
-                    <TextBlock x:Name="UsedText" Foreground="{StaticResource TextBrush}"/>
-                    <TextBlock x:Name="FreeText" Foreground="{StaticResource TextBrush}"/>
-                    <TextBlock x:Name="DuplicateText" Foreground="{StaticResource TextBrush}"/>
-                    <TextBlock x:Name="UniqueText" Foreground="{StaticResource TextBrush}"/>
-                    <Separator Margin="0,14"/>
-                    <Button x:Name="CleanButton" Content="Nettoyer les doublons" Click="CleanDuplicates_Click"/>
-                    <Button Content="Exporter manifeste CSV" Click="ExportCsv_Click"/>
-                    <Separator Margin="0,14"/>
-                    <TextBlock Text="Le sélecteur NHSE fonctionne maintenant et vérifie le dossier choisi. L'exploitation des noms, images, catégories et variantes sera ajoutée dans la v0.2." TextWrapping="Wrap" Foreground="{StaticResource MutedTextBrush}"/>
-                </StackPanel>
+            <!-- Center: visual catalog / current NHI -->
+            <Border Grid.Column="1" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="1" CornerRadius="10" Padding="10" Margin="0,0,12,0">
+                <TabControl x:Name="MainTabs">
+                    <TabItem Header="Catalogue NHSE">
+                        <Border Background="{StaticResource PanelBrush}" Padding="8">
+                            <DockPanel>
+                                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                                    <StackPanel>
+                                        <TextBlock Text="Sélection des objets" FontSize="18" FontWeight="SemiBold"/>
+                                        <TextBlock x:Name="CatalogCountText" Text="Charge NHSE pour afficher les objets."
+                                                   Foreground="{StaticResource MutedTextBrush}"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <Button Content="Tout visible" Click="SelectVisible_Click"/>
+                                        <Button Content="Effacer sélection" Click="ClearSelection_Click"/>
+                                    </StackPanel>
+                                </DockPanel>
+
+                                <DataGrid x:Name="CatalogGrid" AutoGenerateColumns="False" IsReadOnly="False"
+                                          CanUserAddRows="False" CanUserDeleteRows="False" HeadersVisibility="Column"
+                                          GridLinesVisibility="Horizontal" SelectionMode="Single"
+                                          EnableRowVirtualization="True" EnableColumnVirtualization="True">
+                                    <DataGrid.Columns>
+                                        <DataGridCheckBoxColumn Header="✓" Binding="{Binding Selected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="45"/>
+                                        <DataGridTemplateColumn Header="Aperçu" Width="72" IsReadOnly="True">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Grid Width="54" Height="54" Margin="2">
+                                                        <Border Background="{StaticResource PanelAltBrush}" CornerRadius="7"/>
+                                                        <Image Source="{Binding Sprite}" Stretch="Uniform" Margin="4"/>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTextColumn Header="Nom" Binding="{Binding Name}" Width="2*" IsReadOnly="True"/>
+                                        <DataGridTextColumn Header="ID" Binding="{Binding IdText}" Width="82" IsReadOnly="True"/>
+                                        <DataGridTextColumn Header="Catégorie" Binding="{Binding Category}" Width="125" IsReadOnly="True"/>
+                                        <DataGridTextColumn Header="Sous-catégorie" Binding="{Binding Subcategory}" Width="170" IsReadOnly="True"/>
+                                        <DataGridTextColumn Header="Pile max" Binding="{Binding MaxStack}" Width="80" IsReadOnly="True"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </DockPanel>
+                        </Border>
+                    </TabItem>
+
+                    <TabItem Header="Inventaire .nhi">
+                        <Border Background="{StaticResource PanelBrush}" Padding="8">
+                            <DockPanel>
+                                <StackPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                                    <TextBlock Text="Contenu du fichier .nhi" FontSize="18" FontWeight="SemiBold"/>
+                                    <TextBlock x:Name="CurrentFileText" Text="Nouvel inventaire non enregistré"
+                                               Foreground="{StaticResource MutedTextBrush}" TextTrimming="CharacterEllipsis"/>
+                                </StackPanel>
+                                <DataGrid x:Name="ItemsGrid" AutoGenerateColumns="False" IsReadOnly="True"
+                                          CanUserAddRows="False" CanUserDeleteRows="False" HeadersVisibility="Column"
+                                          GridLinesVisibility="Horizontal" EnableRowVirtualization="True">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Slot" Binding="{Binding Slot}" Width="65"/>
+                                        <DataGridTextColumn Header="Nom" Binding="{Binding Name}" Width="2*"/>
+                                        <DataGridTextColumn Header="ID" Binding="{Binding ItemId}" Width="90"/>
+                                        <DataGridTextColumn Header="Qté" Binding="{Binding Quantity}" Width="65"/>
+                                        <DataGridTextColumn Header="Catégorie" Binding="{Binding Category}" Width="140"/>
+                                        <DataGridTextColumn Header="System" Binding="{Binding SystemParam}" Width="75"/>
+                                        <DataGridTextColumn Header="Additional" Binding="{Binding AdditionalParam}" Width="85"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </DockPanel>
+                        </Border>
+                    </TabItem>
+                </TabControl>
+            </Border>
+
+            <!-- Right: generation controls + analysis -->
+            <Border Grid.Column="2" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="1" CornerRadius="10" Padding="14">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock Text="Génération" FontSize="19" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="SelectedCountText" Text="0 objet sélectionné" Foreground="{StaticResource CyanBrush}" Margin="0,4,0,8"/>
+
+                        <TextBlock Text="Preset de sélection" FontWeight="SemiBold"/>
+                        <ComboBox x:Name="PresetComboBox" SelectedIndex="0">
+                            <ComboBoxItem Content="Tout le catalogue" Tag="*"/>
+                            <ComboBoxItem Content="Tous les meubles" Tag="Meubles"/>
+                            <ComboBoxItem Content="Tous les vêtements" Tag="Vêtements"/>
+                            <ComboBoxItem Content="Tous les matériaux" Tag="Matériaux"/>
+                            <ComboBoxItem Content="Collections spéciales" Tag="Collections spéciales"/>
+                            <ComboBoxItem Content="Outils / consommables" Tag="Outils / consommables"/>
+                            <ComboBoxItem Content="Photos" Tag="Collections spéciales|Photos"/>
+                            <ComboBoxItem Content="Gyroïdes" Tag="Collections spéciales|Gyroïdes"/>
+                            <ComboBoxItem Content="Art authentique" Tag="Collections spéciales|Art authentique"/>
+                        </ComboBox>
+                        <Button Content="Appliquer le preset" Click="ApplyPreset_Click" Style="{StaticResource CyanButtonStyle}"/>
+
+                        <Separator Margin="0,10"/>
+                        <TextBlock Text="Quantités" FontWeight="SemiBold"/>
+                        <CheckBox x:Name="UseMaxStackCheckBox" Content="Utiliser la pile maximale quand possible" IsChecked="True"/>
+                        <DockPanel Margin="4,3">
+                            <TextBlock Text="Nombre de piles / exemplaires :" VerticalAlignment="Center"/>
+                            <TextBox x:Name="StackCopiesBox" Text="1" Width="56" HorizontalContentAlignment="Center" Margin="8,0,0,0"/>
+                        </DockPanel>
+                        <CheckBox x:Name="SkipExistingCheckBox" Content="Ignorer les IDs déjà présents" IsChecked="True"/>
+
+                        <Border Background="{StaticResource PanelAltBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                                CornerRadius="7" Padding="9" Margin="4,8">
+                            <TextBlock Text="Les couleurs qui sont des IDs distincts dans NHSE sont déjà sélectionnables séparément. Les variantes de corps/personnalisations avancées seront ajoutées après validation de ce générateur." TextWrapping="Wrap" Foreground="{StaticResource MutedTextBrush}"/>
+                        </Border>
+
+                        <Button Content="Ajouter la sélection au .nhi" Click="AddSelected_Click" Style="{StaticResource AccentButtonStyle}"/>
+
+                        <Separator Margin="0,12"/>
+                        <TextBlock Text="Analyse du .nhi" FontSize="18" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="CapacityText" Margin="0,8,0,0"/>
+                        <TextBlock x:Name="UsedText"/>
+                        <TextBlock x:Name="FreeText"/>
+                        <TextBlock x:Name="DuplicateText"/>
+                        <TextBlock x:Name="UniqueText"/>
+
+                        <Button x:Name="CleanButton" Content="Nettoyer les doublons stricts" Click="CleanDuplicates_Click" Margin="4,10,4,2"/>
+                        <Button Content="Exporter manifeste CSV" Click="ExportCsv_Click"/>
+                        <Button Content="Générer / enregistrer .nhi" Click="SaveAs_Click" Style="{StaticResource AccentButtonStyle}"/>
+                    </StackPanel>
+                </ScrollViewer>
             </Border>
         </Grid>
 
-        <Grid Grid.Row="2" Margin="0,12,0,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            <StackPanel>
-                <TextBlock x:Name="StatusText" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}"/>
-                <ProgressBar x:Name="SlotProgress" Height="14" Minimum="0" Maximum="9000" Margin="0,6,20,0"
-                             Background="{StaticResource ControlBrush}" Foreground="{StaticResource AccentBrush}"/>
-            </StackPanel>
-            <Button Grid.Column="1" Content="Générer / enregistrer .nhi" FontWeight="SemiBold" Click="SaveAs_Click" VerticalAlignment="Bottom"/>
-        </Grid>
+        <!-- Footer -->
+        <Border Grid.Row="2" Background="{StaticResource HeaderBrush}" BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="0,1,0,0" Padding="16,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock x:Name="StatusText" FontWeight="SemiBold"/>
+                    <ProgressBar x:Name="SlotProgress" Minimum="0" Maximum="9000" Margin="0,6,20,0"/>
+                </StackPanel>
+                <TextBlock Grid.Column="1" Text="GPL-3.0 • données chargées depuis votre installation NHSE"
+                           Foreground="{StaticResource MutedTextBrush}" VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
     </Grid>
 </Window>
