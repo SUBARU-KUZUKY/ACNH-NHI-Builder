@@ -1,4 +1,6 @@
 using ACNH.NHI.Builder.Core;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Windows.Media;
@@ -8,34 +10,22 @@ namespace ACNH.NHI.Builder.App;
 
 /// <summary>
 /// Loads the user's own NHSE installation at runtime. This project does not redistribute
-/// NHSE binaries or Nintendo assets; it reads the metadata/sprites from the selected folder.
+/// NHSE binaries or Nintendo assets; it reads metadata/sprites from the selected folder.
 /// </summary>
 public sealed class NhseAdapter : IDisposable
 {
     private readonly NhseLoadContext _context;
-    private readonly MethodInfo _getItemKind;
-    private readonly MethodInfo? _tryGetMaxStack;
     private readonly MethodInfo? _getItemSprite;
-    private readonly MethodInfo? _initializeSprites;
-    private readonly string[] _itemNames;
     private readonly Dictionary<ushort, ImageSource?> _spriteCache = new();
 
     private NhseAdapter(
         string folder,
         NhseLoadContext context,
-        string[] itemNames,
-        MethodInfo getItemKind,
-        MethodInfo? tryGetMaxStack,
-        MethodInfo? initializeSprites,
         MethodInfo? getItemSprite,
         IReadOnlyList<ItemCatalogEntry> catalog)
     {
         Folder = folder;
         _context = context;
-        _itemNames = itemNames;
-        _getItemKind = getItemKind;
-        _tryGetMaxStack = tryGetMaxStack;
-        _initializeSprites = initializeSprites;
         _getItemSprite = getItemSprite;
         Catalog = catalog;
         CatalogById = catalog.ToDictionary(z => z.ItemId);
@@ -47,6 +37,7 @@ public sealed class NhseAdapter : IDisposable
 
     public static NhseAdapter Load(string folder, string language = "fr")
     {
+        folder = Path.GetFullPath(folder);
         var corePath = Path.Combine(folder, "NHSE.Core.dll");
         if (!File.Exists(corePath))
             throw new FileNotFoundException("NHSE.Core.dll est introuvable dans le dossier sélectionné.", corePath);
@@ -58,8 +49,14 @@ public sealed class NhseAdapter : IDisposable
             var gameInfoType = core.GetType("NHSE.Core.GameInfo", throwOnError: true)!;
             var itemInfoType = core.GetType("NHSE.Core.ItemInfo", throwOnError: true)!;
 
-            var getStrings = gameInfoType.GetMethod("GetStrings", BindingFlags.Public | BindingFlags.Static, [typeof(string)])
+            var getStrings = gameInfoType.GetMethod(
+                "GetStrings",
+                BindingFlags.Public | BindingFlags.Static,
+                binder: null,
+                types: [typeof(string)],
+                modifiers: null)
                 ?? throw new MissingMethodException("NHSE.Core.GameInfo.GetStrings(string) est introuvable.");
+
             var strings = getStrings.Invoke(null, [language])
                 ?? throw new InvalidOperationException("NHSE n'a pas retourné les chaînes de langue demandées.");
 
@@ -69,7 +66,12 @@ public sealed class NhseAdapter : IDisposable
             var names = itemListField.GetValue(strings) as string[]
                 ?? throw new InvalidOperationException("Impossible de lire la liste des objets NHSE.");
 
-            var getItemKind = itemInfoType.GetMethod("GetItemKind", BindingFlags.Public | BindingFlags.Static, [typeof(ushort)])
+            var getItemKind = itemInfoType.GetMethod(
+                "GetItemKind",
+                BindingFlags.Public | BindingFlags.Static,
+                binder: null,
+                types: [typeof(ushort)],
+                modifiers: null)
                 ?? throw new MissingMethodException("NHSE.Core.ItemInfo.GetItemKind(ushort) est introuvable.");
 
             var tryGetMaxStack = itemInfoType.GetMethods(BindingFlags.Public | BindingFlags.Static)
@@ -83,7 +85,6 @@ public sealed class NhseAdapter : IDisposable
 
             var catalog = BuildCatalog(names, getItemKind, tryGetMaxStack);
 
-            MethodInfo? initializeSprites = null;
             MethodInfo? getItemSprite = null;
             var spritesPath = Path.Combine(folder, "NHSE.Sprites.dll");
             if (File.Exists(spritesPath))
@@ -92,17 +93,28 @@ public sealed class NhseAdapter : IDisposable
                 {
                     var sprites = context.LoadFromAssemblyPath(spritesPath);
                     var spriteType = sprites.GetType("NHSE.Sprites.ItemSprite", throwOnError: false);
-                    initializeSprites = spriteType?.GetMethod("Initialize", BindingFlags.Public | BindingFlags.Static, [typeof(string[])]);
-                    getItemSprite = spriteType?.GetMethod("GetItemSprite", BindingFlags.Public | BindingFlags.Static, [typeof(ushort), typeof(ushort)]);
+                    var initializeSprites = spriteType?.GetMethod(
+                        "Initialize",
+                        BindingFlags.Public | BindingFlags.Static,
+                        binder: null,
+                        types: [typeof(string[])],
+                        modifiers: null);
+                    getItemSprite = spriteType?.GetMethod(
+                        "GetItemSprite",
+                        BindingFlags.Public | BindingFlags.Static,
+                        binder: null,
+                        types: [typeof(ushort), typeof(ushort)],
+                        modifiers: null);
                     initializeSprites?.Invoke(null, [names]);
                 }
                 catch
                 {
                     // Names/categories remain usable even if sprite dependencies are unavailable.
+                    getItemSprite = null;
                 }
             }
 
-            return new NhseAdapter(folder, context, names, getItemKind, tryGetMaxStack, initializeSprites, getItemSprite, catalog);
+            return new NhseAdapter(folder, context, getItemSprite, catalog);
         }
         catch
         {
@@ -165,10 +177,11 @@ public sealed class NhseAdapter : IDisposable
     {
         if (method is null)
             return 1;
+
         try
         {
             object?[] args = [id, (ushort)0];
-            var ok = method.Invoke(null, args) as bool? == true;
+            var ok = method.Invoke(null, args) is true;
             if (ok && args[1] is ushort value && value > 0)
                 return value;
         }
@@ -194,13 +207,14 @@ public sealed class NhseAdapter : IDisposable
         if (kind == "Kind_Socks") return ("Vêtements", "Chaussettes");
         if (kind is "Kind_Bag" or "Kind_HandBag") return ("Vêtements", "Sacs");
         if (kind is "Kind_Cap" or "Kind_Helmet") return ("Vêtements", "Chapeaux");
-        if (kind is "Kind_Accessory") return ("Vêtements", "Accessoires");
+        if (kind == "Kind_Accessory") return ("Vêtements", "Accessoires");
         if (kind is "Kind_NpcOutfit" or "Kind_PlayerDemoOutfit") return ("Vêtements", "Tenues spéciales");
+        if (kind == "Kind_Umbrella") return ("Vêtements", "Parapluies");
 
         if (kind.StartsWith("Ftr_", StringComparison.Ordinal) || kind is "Kind_Ftr" or "Kind_EventObjFtr") return ("Meubles", "Mobilier");
         if (kind is "Kind_FtrWall" or "Kind_DoorDeco") return ("Meubles", "Objets muraux");
-        if (kind is "Kind_RoomWall") return ("Meubles", "Papiers peints");
-        if (kind is "Kind_RoomFloor") return ("Meubles", "Sols");
+        if (kind == "Kind_RoomWall") return ("Meubles", "Papiers peints");
+        if (kind == "Kind_RoomFloor") return ("Meubles", "Sols");
         if (kind is "Kind_Rug" or "Kind_RugMyDesign" or "Kind_CommonFabricRug") return ("Meubles", "Tapis");
         if (kind is "Kind_Pillar" or "Kind_Counter") return ("Meubles", "Piliers / comptoirs");
 
@@ -212,12 +226,12 @@ public sealed class NhseAdapter : IDisposable
         if (kind is "Kind_Fruit" or "Kind_Vegetable" or "Kind_VegeSeedling" or "Kind_VegeTree" or "Kind_TreeSeedling" or "Kind_BushSeedling" or "Kind_FlowerSeed")
             return ("Matériaux", "Fruits / légumes / graines");
 
-        if (kind is "Kind_Bromide") return ("Collections spéciales", "Photos");
+        if (kind == "Kind_Bromide") return ("Collections spéciales", "Photos");
         if (kind is "Kind_Gyroid" or "Kind_GyroidScrap") return ("Collections spéciales", "Gyroïdes");
         if (kind is "Kind_Picture" or "Kind_Sculpture") return ("Collections spéciales", "Art authentique");
         if (kind is "Kind_PictureFake" or "Kind_SculptureFake") return ("Collections spéciales", "Art contrefait");
         if (kind is "Kind_Music" or "Kind_MusicMiss") return ("Collections spéciales", "Musiques");
-        if (kind is "Kind_Poster") return ("Collections spéciales", "Posters");
+        if (kind == "Kind_Poster") return ("Collections spéciales", "Posters");
         if (kind is "Kind_FishToy" or "Kind_InsectToy") return ("Collections spéciales", "Modèles poissons / insectes");
         if (kind is "Kind_Fish" or "Kind_Insect" or "Kind_DiveFish" or "Kind_ShellFish" or "Kind_Fossil" or "Kind_FossilUnknown")
             return ("Collections spéciales", "Musée / créatures");
@@ -229,7 +243,6 @@ public sealed class NhseAdapter : IDisposable
             return ("Outils / consommables", "Consommables / tickets");
 
         if (kind is "Kind_DIYRecipe" or "Kind_MessageBottle") return ("Recettes", "Plans / recettes");
-        if (kind is "Kind_Umbrella") return ("Vêtements", "Parapluies");
         if (kind is "Kind_Flower" or "Kind_FlowerBud" or "Kind_Bush" or "Kind_Tree" or "Kind_VegeTree") return ("Nature", "Plantes");
 
         return ("Autres", kind.Replace("Kind_", string.Empty));
@@ -259,39 +272,28 @@ public sealed class NhseAdapter : IDisposable
 
         try
         {
-            var image = _getItemSprite.Invoke(null, [id, (ushort)0]);
-            if (image is null)
+            var raw = _getItemSprite.Invoke(null, [id, (ushort)0]);
+            if (raw is not Image image)
             {
                 _spriteCache[id] = null;
                 return null;
             }
 
-            using var stream = new MemoryStream();
-            var imageType = image.GetType();
-            var drawingAssembly = imageType.Assembly;
-            var imageFormatType = drawingAssembly.GetType("System.Drawing.Imaging.ImageFormat");
-            var png = imageFormatType?.GetProperty("Png", BindingFlags.Public | BindingFlags.Static)?.GetValue(null);
-            var save = imageFormatType is null ? null : imageType.GetMethod("Save", [typeof(Stream), imageFormatType]);
-
-            if (save is null || png is null)
+            using (image)
+            using (var stream = new MemoryStream())
             {
-                (image as IDisposable)?.Dispose();
-                _spriteCache[id] = null;
-                return null;
+                image.Save(stream, ImageFormat.Png);
+                stream.Position = 0;
+
+                var bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                bitmap.StreamSource = stream;
+                bitmap.EndInit();
+                bitmap.Freeze();
+                _spriteCache[id] = bitmap;
+                return bitmap;
             }
-
-            save.Invoke(image, [stream, png]);
-            (image as IDisposable)?.Dispose();
-            stream.Position = 0;
-
-            var bitmap = new BitmapImage();
-            bitmap.BeginInit();
-            bitmap.CacheOption = BitmapCacheOption.OnLoad;
-            bitmap.StreamSource = stream;
-            bitmap.EndInit();
-            bitmap.Freeze();
-            _spriteCache[id] = bitmap;
-            return bitmap;
         }
         catch
         {
@@ -329,6 +331,9 @@ public sealed class NhseAdapter : IDisposable
     {
         protected override Assembly? Load(AssemblyName assemblyName)
         {
+            if (assemblyName.Name?.StartsWith("System.", StringComparison.Ordinal) == true)
+                return null;
+
             var candidate = Path.Combine(folder, assemblyName.Name + ".dll");
             if (File.Exists(candidate))
                 return LoadFromAssemblyPath(candidate);
