@@ -9,6 +9,7 @@ public partial class MainWindow : Window
 {
     private NhiInventory _inventory = new();
     private string? _currentPath;
+    private string? _nhsePath;
 
     public MainWindow()
     {
@@ -126,7 +127,7 @@ public partial class MainWindow : Window
         {
             ManifestWriter.WriteCsv(dialog.FileName, _inventory, new Dictionary<ushort, ItemCatalogEntry>());
             MessageBox.Show(this,
-                "Le manifeste CSV a été exporté. Les noms restent 'Unknown' dans cette alpha jusqu'à l'intégration des données NHSE.",
+                "Le manifeste CSV a été exporté. Les noms restent 'Unknown' jusqu'à l'intégration des données NHSE dans la v0.2.",
                 "Export terminé",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
@@ -137,17 +138,80 @@ public partial class MainWindow : Window
         }
     }
 
-    private void Nhse_Click(object sender, RoutedEventArgs e) =>
+    private void Nhse_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFolderDialog
+        {
+            Title = "Sélectionner le dossier contenant NHSE"
+        };
+
+        if (dialog.ShowDialog() != true)
+            return;
+
+        var detected = FindNhseFolder(dialog.FolderName);
+        if (detected is null)
+        {
+            MessageBox.Show(this,
+                "Je n'ai pas trouvé d'installation NHSE dans ce dossier.\n\nSélectionne le dossier qui contient NHSE.exe / NHSE.WinForms.exe ou NHSE.Core.dll. Le programme vérifie aussi les sous-dossiers directs.",
+                "NHSE non détecté",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return;
+        }
+
+        _nhsePath = detected;
+        NhseStatusText.Text = $"NHSE détecté : {_nhsePath}";
+        NhseStatusText.ToolTip = _nhsePath;
+
         MessageBox.Show(this,
-            "La détection des données et sprites NHSE est la prochaine grosse étape. Cette première release permet déjà de charger, analyser, nettoyer et réenregistrer les .nhi.",
-            "Adaptateur NHSE — bientôt",
+            "Dossier NHSE détecté et mémorisé pour cette session.\n\nLa prochaine étape (v0.2) utilisera ce dossier pour charger les noms, catégories, variantes et sprites.",
+            "NHSE détecté",
             MessageBoxButton.OK,
             MessageBoxImage.Information);
+    }
+
+    private static string? FindNhseFolder(string selectedFolder)
+    {
+        if (LooksLikeNhseFolder(selectedFolder))
+            return selectedFolder;
+
+        try
+        {
+            foreach (var child in Directory.EnumerateDirectories(selectedFolder))
+            {
+                if (LooksLikeNhseFolder(child))
+                    return child;
+            }
+        }
+        catch (UnauthorizedAccessException)
+        {
+            // The selected root itself was readable, but one of its children was not.
+        }
+        catch (IOException)
+        {
+            // Ignore inaccessible child folders and report a normal detection failure.
+        }
+
+        return null;
+    }
+
+    private static bool LooksLikeNhseFolder(string folder)
+    {
+        var markers = new[]
+        {
+            "NHSE.exe",
+            "NHSE.WinForms.exe",
+            "NHSE.Core.dll",
+            "NHSE.Sprites.dll"
+        };
+
+        return markers.Any(file => File.Exists(Path.Combine(folder, file)));
+    }
 
     private void Presets_Click(object sender, RoutedEventArgs e) =>
         MessageBox.Show(this,
-            "Les presets (tout le catalogue, vêtements, matériaux, collections, variantes, etc.) arriveront avec l'adaptateur NHSE.",
-            "Presets — bientôt",
+            "Les presets (tout le catalogue, vêtements, matériaux, collections, variantes, etc.) seront activés quand l'adaptateur NHSE chargera réellement les données dans la v0.2.",
+            "Presets — v0.2",
             MessageBoxButton.OK,
             MessageBoxImage.Information);
 
