@@ -13,7 +13,6 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Header -->
         <Border Grid.Row="0" Background="{StaticResource HeaderBrush}" BorderBrush="{StaticResource BorderBrush}"
                 BorderThickness="0,0,0,1" Padding="18,14">
             <DockPanel LastChildFill="True">
@@ -32,7 +31,6 @@
             </DockPanel>
         </Border>
 
-        <!-- Main area -->
         <Grid Grid.Row="1" Margin="14">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="300"/>
@@ -40,7 +38,6 @@
                 <ColumnDefinition Width="335"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Left: NHSE + category tree -->
             <Border Grid.Column="0" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource BorderBrush}"
                     BorderThickness="1" CornerRadius="10" Padding="14" Margin="0,0,12,0">
                 <DockPanel LastChildFill="True">
@@ -67,7 +64,7 @@
                     </StackPanel>
 
                     <TreeView x:Name="CategoryTree" IsEnabled="False" SelectedItemChanged="CategoryTree_SelectedItemChanged">
-                        <TreeViewItem Header="Tout le catalogue" Tag="*" IsSelected="True"/>
+                        <TreeViewItem Header="Tout le catalogue" Tag="*"/>
                         <TreeViewItem Header="Meubles" Tag="Meubles" IsExpanded="True">
                             <TreeViewItem Header="Mobilier" Tag="Meubles|Mobilier"/>
                             <TreeViewItem Header="Objets muraux" Tag="Meubles|Objets muraux"/>
@@ -107,7 +104,6 @@
                 </DockPanel>
             </Border>
 
-            <!-- Center: visual catalog / current NHI -->
             <Border Grid.Column="1" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource BorderBrush}"
                     BorderThickness="1" CornerRadius="10" Padding="10" Margin="0,0,12,0">
                 <TabControl x:Name="MainTabs">
@@ -180,7 +176,6 @@
                 </TabControl>
             </Border>
 
-            <!-- Right: generation controls + analysis -->
             <Border Grid.Column="2" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource BorderBrush}"
                     BorderThickness="1" CornerRadius="10" Padding="14">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -234,7 +229,6 @@
             </Border>
         </Grid>
 
-        <!-- Footer -->
         <Border Grid.Row="2" Background="{StaticResource HeaderBrush}" BorderBrush="{StaticResource BorderBrush}"
                 BorderThickness="0,1,0,0" Padding="16,10">
             <Grid>
