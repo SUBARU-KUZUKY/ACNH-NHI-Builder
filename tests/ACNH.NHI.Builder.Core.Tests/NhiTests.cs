@@ -1,4 +1,5 @@
 using ACNH.NHI.Builder.Core;
+using Xunit;
 
 namespace ACNH.NHI.Builder.Core.Tests;
 
