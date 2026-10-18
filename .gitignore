@@ -1,0 +1,28 @@
+## .NET
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## JetBrains
+.idea/
+*.sln.iml
+
+## Build output
+artifacts/
+TestResults/
+
+## Local data / game assets
+local-data/
+nhse-local/
+sprites-local/
+*.nhi
+*.dat
+*.bin
+
+## OS
+Thumbs.db
+.DS_Store
