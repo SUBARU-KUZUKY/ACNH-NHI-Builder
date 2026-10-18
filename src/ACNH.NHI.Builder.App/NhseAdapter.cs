@@ -1,6 +1,7 @@
 using ACNH.NHI.Builder.Core;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Windows.Media;
@@ -109,7 +110,6 @@ public sealed class NhseAdapter : IDisposable
                 }
                 catch
                 {
-                    // Names/categories remain usable even if sprite dependencies are unavailable.
                     getItemSprite = null;
                 }
             }
@@ -187,7 +187,6 @@ public sealed class NhseAdapter : IDisposable
         }
         catch
         {
-            // fall through
         }
         return 1;
     }
